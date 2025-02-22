@@ -1,22 +1,21 @@
-let weather = "clear"; // Симулирани данни: "clear", "rain", "night"
-let timeOfDay = 0; // 0 до 1 за цикъл ден-нощ
+let weather = "clear";
+let timeOfDay = 0;
 let rainDrops = [];
+let apiKey = "ПАСТНИ_ТВОЯ_API_КЛЮЧ_ТУК"; // Смени с истинския ключ
+let city = "Sofia";
 
 function setup() {
   createCanvas(600, 400);
-  // Симулираме промяна на времето на всеки 5 секунди
-  setInterval(changeWeather, 5000);
   for (let i = 0; i < 50; i++) {
     rainDrops.push({ x: random(width), y: random(height), speed: random(2, 5) });
   }
+  fetchWeather();
 }
 
 function draw() {
-  // Фон според времето на деня
   let skyColor = lerpColor(color(135, 206, 235), color(0, 0, 50), timeOfDay);
   background(skyColor);
 
-  // Планини
   fill(100, 100, 100);
   noStroke();
   beginShape();
@@ -28,12 +27,10 @@ function draw() {
   vertex(width, height);
   endShape(CLOSE);
 
-  // Слънце/Луна
   let sunY = map(timeOfDay, 0, 1, height * 0.2, height * 0.8);
   fill(timeOfDay < 0.5 ? "#FFD700" : "#FFFFFF");
   ellipse(width * 0.75, sunY, 40, 40);
 
-  // Дъжд, ако времето е "rain"
   if (weather === "rain") {
     stroke(255, 255, 255, 150);
     for (let drop of rainDrops) {
@@ -42,25 +39,19 @@ function draw() {
       if (drop.y > height) drop.y = -10;
     }
   }
-
-  // Актуализиране на времето на деня
-  timeOfDay = (sin(frameCount * 0.01) + 1) / 2;
 }
 
-// Симулация на промяна във времето
-function changeWeather() {
-  let conditions = ["clear", "rain", "night"];
-  weather = random(conditions);
-  console.log("Weather changed to: " + weather);
+function fetchWeather() {
+  let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      weather = data.weather[0].main.toLowerCase();
+      let sunrise = data.sys.sunrise * 1000;
+      let sunset = data.sys.sunset * 1000;
+      let now = Date.now();
+      timeOfDay = constrain(map(now, sunrise, sunset, 0, 1), 0, 1);
+      console.log("Weather:", weather, "Time of Day:", timeOfDay);
+    })
+    .catch(error => console.error("Error:", error));
 }
-let apiKey = "0ea6e0f0f8e1d7a98c4f27b86ba4a92d";
-let city = "Sofia"; // Или местоположение на притежателя
-fetch(`https://cors-anywhere.herokuapp.com/https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`)
-  .then(response => response.json())
-  .then(data => {
-    weather = data.weather[0].main.toLowerCase(); // напр. "Rain", "Clear"
-    let sunrise = data.sys.sunrise * 1000;
-    let sunset = data.sys.sunset * 1000;
-    let now = Date.now();
-    timeOfDay = map(now, sunrise, sunset, 0, 1); // Адаптира ден/нощ
-  });
