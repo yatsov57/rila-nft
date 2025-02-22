@@ -55,7 +55,7 @@ function changeWeather() {
 }
 let apiKey = "0ea6e0f0f8e1d7a98c4f27b86ba4a92d";
 let city = "Sofia"; // Или местоположение на притежателя
-fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`)
+fetch(`https://cors-anywhere.herokuapp.com/https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`)
   .then(response => response.json())
   .then(data => {
     weather = data.weather[0].main.toLowerCase(); // напр. "Rain", "Clear"
